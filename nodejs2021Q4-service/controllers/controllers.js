@@ -8,13 +8,6 @@ async function getAllItems(req, res, pathTofile) {
                 let obj = {...el, "password": ""};
                 return obj;
              })
-        // let users = await new Promise((resolve, reject) => {
-        //     resolve(Users);
-        // })
-        // const usersWithoutPassword = Users.map((el, ind) => {
-        //     let obj = {...el, "password": ""};
-        //     return obj;
-        // })
         res.writeHead(200, {'Content-Type': 'application/json'})
         res.end(JSON.stringify(usersWithoutPassword))
         
@@ -22,12 +15,9 @@ async function getAllItems(req, res, pathTofile) {
         console.error(error)
     }
 }
-
+///////////////////////////////////////////////////////////////////////////
 async function getItemById(req, res, id) {
     try{
-        // let users = await new Promise((resolve, reject) => {
-        //     resolve(Users);
-        // })
         let path = req.url.split('/')[1]
         let users = await getDataFromFile(`./pseudodb/${path}.json`, 'utf8')
         const userWithoutPassword = JSON.parse(users).find((el, ind) => {
@@ -44,14 +34,12 @@ async function getItemById(req, res, id) {
         console.log(error)
     }
 }
-
+////////////////////////////////////////////////////////////////////////////
 async function createNewItem(req,res) {
     try{
         let path = req.url.split('/')[1]
         let users = await readDataFromFile(`./pseudodb/${path}.json`)
         users = JSON.parse(users)
-        console.log(users, "typeof", Array.isArray(users))
-
         let body = '';
         req.on('data', (chunk) => {
             body += chunk.toString();
@@ -61,7 +49,7 @@ async function createNewItem(req,res) {
             let resultObj = {...JSON.parse(body), id: uuid()}
             users.push(resultObj)
             writeDataToFile(`./pseudodb/${path}.json`, users)
-            console.log("resultObj",resultObj)
+            console.log(JSON.stringify({...resultObj, password: ""}))
             res.writeHead(200, {'Content-Type': 'application/json'})
             return res.end(JSON.stringify({...resultObj, password: ""}))
         })
@@ -72,7 +60,6 @@ async function createNewItem(req,res) {
 
 async function getDataFromFile(filename) {
     let data = fs.readFileSync(filename, 'utf8')
-    console.log('data from file', data)
     return data;
 }
 
@@ -84,14 +71,12 @@ async function writeDataToFile(filename, content) {
 
 function getIdFromRequest(req) {
     let id = req.url.split('/')[2];
-    console.log("id", id)
     return id
 }
 
 async function readDataFromFile(filename) {
     try{
         let result = await fs.readFileSync(filename, 'utf8')
-        console.log("result",result)
         return result.toString('utf8')
     } catch(error) {
         console.log(error)
@@ -104,7 +89,7 @@ async function updateItem(req, res, id) {
         let path = req.url.split('/')[1]
         let items = await readDataFromFile(`./pseudodb/${path}.json`)
         let findObj = JSON.parse(items).find(el => el.id === id)
-        console.log(findObj)
+
         req.on('data', (chunk) => {
             body += chunk.toString()
         })
@@ -141,9 +126,7 @@ async function deleteItem(req, res, id) {
             res.end(JSON.stringify({message: `Item with id ${id} not found`}))
         }
 
-        req.on('data', () => {
-
-        })
+        req.on('data', () => { })
 
         req.on('end', () => {
             const newUsersData = JSON.parse(dataFromFile).filter(el => el.id != id)
@@ -161,14 +144,12 @@ async function getAllTasks(req, res) {
     try{
         let dataFromRequestUrl = req.url.split('/')
         const [,path, id, nametasks] = [...dataFromRequestUrl];
-        console.log('dataFromReq',dataFromRequestUrl)
         let dataFromBoards = await readDataFromFile(`./pseudodb/${path}.json`)
         let tasksArray = await readDataFromFile(`./pseudodb/${nametasks}.json`)
-        console.log("tasksArray", tasksArray)
         let findObjFromBords = JSON.parse(dataFromBoards).find((el, ind) => {
             return el.id === id
         })
-        console.log("findObjFromBords", findObjFromBords)
+
         if(!findObjFromBords) {
             console.log(`Tasks with boardId = ${id} not found`)
             res.writeHead(404, {'Content-Type': 'application/json'})
@@ -178,9 +159,7 @@ async function getAllTasks(req, res) {
         let resultArray = JSON.parse(tasksArray).filter((el, ind) => {
             return el.boardId === findObjFromBords.id
         })
-        console.log("resultArray", resultArray)
 
-        console.log('findObj', findObjFromBords)
         console.log('resultArray', resultArray)
         res.writeHead(200, {'Content-Type': 'application/json'})
         if(resultArray.length === 0) {
@@ -198,14 +177,11 @@ async function getTaskForBoard(req, res) {
     try{
         let dataFromRequestUrl = req.url.split('/')
         const [,path, id, nametasks, taskid] = [...dataFromRequestUrl];
-        console.log('dataFromReq',dataFromRequestUrl)
         let dataFromBoards = await readDataFromFile(`./pseudodb/${path}.json`)
         let tasksArray = await readDataFromFile(`./pseudodb/${nametasks}.json`)
-        console.log("tasksArray", tasksArray)
         let findObjFromBords = JSON.parse(dataFromBoards).find((el, ind) => {
             return el.id === id
         })
-        console.log("findObjFromBords", findObjFromBords)
         if(!findObjFromBords) {
             console.log(`Object with boardId = ${id} not found`)
             res.writeHead(404, {'Content-Type': 'application/json'})
@@ -215,7 +191,7 @@ async function getTaskForBoard(req, res) {
         let resultArray = JSON.parse(tasksArray).filter((el, ind) => {
             return el.boardId === findObjFromBords.id
         })
-        console.log("resultArray", resultArray)
+
         if(resultArray.length === 0) {
             console.log(`Tasks with boardId = ${id} not found`)
             res.writeHead(404, {'Content-Type': 'application/json'})
@@ -249,7 +225,7 @@ async function createTaskForBord(req, res) {
         let findObjFromBords = JSON.parse(dataFromBoards).find((el, ind) => {
             return el.id === id
         })
-        console.log("findObjFromBords", findObjFromBords)
+
         if(!findObjFromBords) {
             console.log(`Object with boardId = ${id} not found`)
             res.writeHead(404, {'Content-Type': 'application/json'})
@@ -261,7 +237,6 @@ async function createTaskForBord(req, res) {
         })
         req.on('end', () => {
             let newTaskId = uuid();
-            console.log("body", body)
             const obj = JSON.parse(body);
             let ind = [];
             const index = JSON.parse(usersArray).findIndex((el, i) => {
@@ -288,23 +263,15 @@ async function createTaskForBord(req, res) {
 
 async function updateTaskForBoard(req, res) {
     try{
-        // const [, board, boardId, nextItem, taskId] = [...req.url.split('/')]
-        // const task = getTaskForBoard(req, res)
-        // if(!task) {
-        //     res.writeHead(404, {'Content-Type': 'application/json'})
-        //     return res.end(`For boardId ${boardId} and taskId ${taskId} task not found.`)
-        // }
         let body = ''
         let dataFromRequestUrl = req.url.split('/')
-        const [,path, id, nametasks, taskid] = [...dataFromRequestUrl];
-        console.log('dataFromReq',dataFromRequestUrl)
+        const [,path, id, nametasks, taskid] = [...dataFromRequestUrl]
         let dataFromBoards = await readDataFromFile(`./pseudodb/${path}.json`)
         let tasksArray = await readDataFromFile(`./pseudodb/${nametasks}.json`)
-        // console.log("tasksArray", tasksArray)
         let findObjFromBords = JSON.parse(dataFromBoards).find((el, ind) => {
             return el.id === id
         })
-        console.log("findObjFromBords", findObjFromBords)
+
         if(!findObjFromBords) {
             console.log(`Object with boardId = ${id} not found`)
             res.writeHead(404, {'Content-Type': 'application/json'})
@@ -314,7 +281,7 @@ async function updateTaskForBoard(req, res) {
         let resultArray = JSON.parse(tasksArray).filter((el, ind) => {
             return el.boardId === findObjFromBords.id
         })
-        console.log("resultArray", resultArray)
+
         if(resultArray.length === 0) {
             console.log(`Tasks with boardId = ${id} not found`)
             res.writeHead(404, {'Content-Type': 'application/json'})
@@ -335,7 +302,6 @@ async function updateTaskForBoard(req, res) {
 
         req.on('end', () => {
             const resultTaskObject = {...findTaskFromResultArray, ...JSON.parse(body), id: findTaskFromResultArray.id}
-
             const tasksForSending = JSON.parse(tasksArray).map((el, ind) => {
                 if(el.id === resultTaskObject.id) {
                     return resultTaskObject
@@ -347,10 +313,7 @@ async function updateTaskForBoard(req, res) {
             console.log('resultTaskObject', resultTaskObject)
             res.writeHead(200, {'Content-Type': 'application/json'})
             res.end(JSON.stringify(resultTaskObject))
-            // return JSON.stringify(findTaskFromResultArray)
         })
-               // res.writeHead(200, {'Content-Type': 'application/json'})
-        // return res.end(JSON.stringify(task))
     } catch(error) {
         console.error(error)
     }
@@ -360,14 +323,12 @@ async function delteTaskFromBord(req, res) {
     try{
         let dataFromRequestUrl = req.url.split('/')
         const [,path, id, nametasks, taskid] = [...dataFromRequestUrl];
-        console.log('dataFromReq',dataFromRequestUrl)
         let dataFromBoards = await readDataFromFile(`./pseudodb/${path}.json`)
         let tasksArray = await readDataFromFile(`./pseudodb/${nametasks}.json`)
-        console.log("tasksArray", tasksArray)
         let findObjFromBords = JSON.parse(dataFromBoards).find((el, ind) => {
             return el.id === id
         })
-        console.log("findObjFromBords", findObjFromBords)
+
         if(!findObjFromBords) {
             console.log(`Object with boardId = ${id} not found`)
             res.writeHead(404, {'Content-Type': 'application/json'})
@@ -377,7 +338,7 @@ async function delteTaskFromBord(req, res) {
         let resultArray = JSON.parse(tasksArray).filter((el, ind) => {
             return el.boardId === findObjFromBords.id
         })
-        console.log("resultArray", resultArray)
+
         if(resultArray.length === 0) {
             console.log(`Tasks with boardId = ${id} not found`)
             res.writeHead(404, {'Content-Type': 'application/json'})
