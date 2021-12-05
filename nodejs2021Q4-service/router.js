@@ -1,5 +1,4 @@
 const http = require('http');
-// const {tasks, task2, Tasks, Bord, User, Column, Bords, Users} = require('./pseudodb/db.js');
 const {getAllItems, getItemById, createNewItem, updateItem, deleteItem, getIdFromRequest, getAllTasks, getTaskForBoard, createTaskForBord, updateTaskForBoard, delteTaskFromBord} = require('./controllers/controllers.js');
 
 const PORT = process.env.PORT || 4000;
